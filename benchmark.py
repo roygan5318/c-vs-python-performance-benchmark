@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parent
 C_SOURCE = ROOT / "insertion_sort.c"
 C_PROGRAM = ROOT / "insertion_sort_c"
 PYTHON_PROGRAM = ROOT / "insertion_sort.py"
+BUILTIN_PROGRAM = ROOT / "builtin_sort.py"
 
 
 def compile_c() -> str:
@@ -55,6 +56,7 @@ def make_chart(rows: list[dict[str, float]], destination: Path) -> None:
 
     c_points = " ".join(f'{x(row["size"]):.1f},{y(row["c_median_seconds"]):.1f}' for row in rows)
     py_points = " ".join(f'{x(row["size"]):.1f},{y(row["python_median_seconds"]):.1f}' for row in rows)
+    builtin_points = " ".join(f'{x(row["size"]):.1f},{y(row["builtin_median_seconds"]):.1f}' for row in rows)
     grid = []
     for step in range(6):
         value = max_time * step / 5
@@ -78,8 +80,10 @@ def make_chart(rows: list[dict[str, float]], destination: Path) -> None:
 <text x="20" y="{height/2}" text-anchor="middle" transform="rotate(-90 20 {height/2})">Median time (seconds)</text>
 <polyline points="{c_points}" fill="none" stroke="#1565c0" stroke-width="4"/>
 <polyline points="{py_points}" fill="none" stroke="#ef6c00" stroke-width="4"/>
-<circle cx="{width-235}" cy="55" r="6" fill="#1565c0"/><text x="{width-220}" y="60">C (-O2)</text>
-<circle cx="{width-135}" cy="55" r="6" fill="#ef6c00"/><text x="{width-120}" y="60">Python</text>
+<polyline points="{builtin_points}" fill="none" stroke="#2e7d32" stroke-width="4"/>
+<circle cx="{width-330}" cy="55" r="6" fill="#1565c0"/><text x="{width-315}" y="60">C insertion</text>
+<circle cx="{width-210}" cy="55" r="6" fill="#ef6c00"/><text x="{width-195}" y="60">Python insertion</text>
+<circle cx="{width-75}" cy="55" r="6" fill="#2e7d32"/><text x="{width-60}" y="60">built-in</text>
 </svg>'''
     destination.write_text(svg)
 
@@ -104,33 +108,58 @@ def main() -> None:
 
             c_times = []
             python_times = []
+            builtin_times = []
             expected_checksum = sum(values)
+            base_commands = [
+                ("c", [str(C_PROGRAM)]),
+                ("python", [sys.executable, str(PYTHON_PROGRAM)]),
+                ("builtin", [sys.executable, str(BUILTIN_PROGRAM)]),
+            ]
+
+            # Warm up each implementation once. These timings are deliberately
+            # discarded so process and filesystem cold-start effects have less
+            # influence on the reported measurements.
+            for language, command in base_commands:
+                _, checksum = run_program(command, data_file)
+                if checksum != expected_checksum:
+                    raise RuntimeError(f"Warm-up checksum mismatch for {language}, n={size}")
+
             for repetition in range(args.repetitions):
-                # Alternate the order to reduce systematic bias from always running one language first.
-                commands = [
-                    ("c", [str(C_PROGRAM)]),
-                    ("python", [sys.executable, str(PYTHON_PROGRAM)]),
-                ]
-                if repetition % 2:
-                    commands.reverse()
+                # Rotate the order so no implementation always runs first.
+                offset = repetition % len(base_commands)
+                commands = base_commands[offset:] + base_commands[:offset]
 
                 for language, command in commands:
                     seconds, checksum = run_program(command, data_file)
                     if checksum != expected_checksum:
                         raise RuntimeError(f"Checksum mismatch for {language}, n={size}")
-                    (c_times if language == "c" else python_times).append(seconds)
+                    if language == "c":
+                        c_times.append(seconds)
+                    elif language == "python":
+                        python_times.append(seconds)
+                    else:
+                        builtin_times.append(seconds)
 
             c_median = statistics.median(c_times)
             python_median = statistics.median(python_times)
+            builtin_median = statistics.median(builtin_times)
             rows.append(
                 {
                     "size": size,
                     "c_median_seconds": c_median,
                     "python_median_seconds": python_median,
+                    "builtin_median_seconds": builtin_median,
                     "python_over_c": python_median / c_median,
+                    "python_over_builtin": python_median / builtin_median,
                 }
             )
-            print(f"n={size:>6,}: C={c_median:.6f}s Python={python_median:.6f}s ratio={python_median/c_median:.1f}x")
+            print(
+                f"n={size:>6,}: C insertion={c_median:.6f}s "
+                f"Python insertion={python_median:.6f}s "
+                f"Python sorted()={builtin_median:.6f}s "
+                f"C ratio={python_median/c_median:.1f}x "
+                f"library ratio={python_median/builtin_median:.1f}x"
+            )
 
     csv_path = ROOT / "results.csv"
     with csv_path.open("w", newline="") as output:
@@ -145,11 +174,11 @@ def main() -> None:
         f"Each value is the median of {args.repetitions} runs. C was compiled with `{Path(compiler).name} -O2`.",
         "Only the insertion-sort operation was timed.",
         "",
-        "| Array size | C median (seconds) | Python median (seconds) | Python/C ratio |",
-        "|---:|---:|---:|---:|",
+        "| Array size | C insertion (s) | Python insertion (s) | Python `sorted()` (s) | Python/C ratio | Python insertion/`sorted()` |",
+        "|---:|---:|---:|---:|---:|---:|",
     ]
     table.extend(
-        f'| {int(row["size"]):,} | {row["c_median_seconds"]:.6f} | {row["python_median_seconds"]:.6f} | {row["python_over_c"]:.1f}× |'
+        f'| {int(row["size"]):,} | {row["c_median_seconds"]:.6f} | {row["python_median_seconds"]:.6f} | {row["builtin_median_seconds"]:.6f} | {row["python_over_c"]:.1f}× | {row["python_over_builtin"]:.1f}× |'
         for row in rows
     )
     table.extend(
@@ -161,6 +190,9 @@ def main() -> None:
             "",
             "Both implementations use the same O(n²) insertion-sort algorithm, so their runtimes grow similarly as the input gets larger. "
             "The absolute times differ because optimized C is compiled to native machine code, while CPython performs additional interpreter, dynamic-type, and object-handling work.",
+            "",
+            "The `sorted()` result is an exploratory library comparison, not an apples-to-apples algorithm comparison. "
+            "It uses CPython's native Timsort implementation rather than insertion sort. It shows how a Python program can avoid a slow Python-level loop by passing a complete operation to optimized native code.",
         ]
     )
     results_path.write_text("\n".join(table) + "\n")
