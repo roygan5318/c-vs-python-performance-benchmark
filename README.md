@@ -4,6 +4,16 @@ This project benchmarks equivalent insertion-sort implementations in C and Pytho
 
 > When C and Python implement the same O(n²) algorithm, how do their execution times compare as the input size increases?
 
+## Project contents
+
+- `insertion_sort.c`: C implementation of insertion sort
+- `insertion_sort.py`: Python implementation of the same algorithm
+- `benchmark.py`: compiles C, creates identical inputs, runs repeated trials, and reports medians
+- `results.csv`: measurements from the latest benchmark run
+- `RESULTS.md`: formatted results and interpretation
+- `results.svg`: graph of median execution time
+- `presentation/`: presentation materials for the project
+
 ## What the project controls
 
 - Both programs implement the same insertion-sort algorithm.
@@ -31,6 +41,17 @@ The runner creates:
 - `results.csv`: data suitable for a spreadsheet
 - `RESULTS.md`: a formatted result table and interpretation
 - `results.svg`: a graph comparing median execution times
+
+## Latest results
+
+| Array size | C median | Python median | Python/C ratio |
+|---:|---:|---:|---:|
+| 1,000 | 0.000093 s | 0.039309 s | 422.7× |
+| 2,000 | 0.000392 s | 0.165946 s | 423.9× |
+| 4,000 | 0.001615 s | 0.738893 s | 457.7× |
+| 8,000 | 0.006722 s | 2.638702 s | 392.5× |
+
+These measurements came from one computer and one set of implementations. Results will vary across systems.
 
 You can change the experiment:
 

@@ -2,14 +2,14 @@
 <rect width="100%" height="100%" fill="white"/>
 <style>text{font-family:system-ui,sans-serif;fill:#263238;font-size:14px} .title{font-size:22px;font-weight:700}</style>
 <text class="title" x="450.0" y="30" text-anchor="middle">Insertion Sort: C vs. Python</text>
-<line x1="90" y1="440.0" x2="860" y2="440.0" stroke="#dbe3ea"/><text x="78" y="445.0" text-anchor="end">0.000</text><line x1="90" y1="363.0" x2="860" y2="363.0" stroke="#dbe3ea"/><text x="78" y="368.0" text-anchor="end">0.814</text><line x1="90" y1="286.0" x2="860" y2="286.0" stroke="#dbe3ea"/><text x="78" y="291.0" text-anchor="end">1.627</text><line x1="90" y1="209.0" x2="860" y2="209.0" stroke="#dbe3ea"/><text x="78" y="214.0" text-anchor="end">2.441</text><line x1="90" y1="132.0" x2="860" y2="132.0" stroke="#dbe3ea"/><text x="78" y="137.0" text-anchor="end">3.255</text><line x1="90" y1="55.0" x2="860" y2="55.0" stroke="#dbe3ea"/><text x="78" y="60.0" text-anchor="end">4.069</text>
+<line x1="90" y1="440.0" x2="860" y2="440.0" stroke="#dbe3ea"/><text x="78" y="445.0" text-anchor="end">0.000</text><line x1="90" y1="363.0" x2="860" y2="363.0" stroke="#dbe3ea"/><text x="78" y="368.0" text-anchor="end">0.581</text><line x1="90" y1="286.0" x2="860" y2="286.0" stroke="#dbe3ea"/><text x="78" y="291.0" text-anchor="end">1.161</text><line x1="90" y1="209.0" x2="860" y2="209.0" stroke="#dbe3ea"/><text x="78" y="214.0" text-anchor="end">1.742</text><line x1="90" y1="132.0" x2="860" y2="132.0" stroke="#dbe3ea"/><text x="78" y="137.0" text-anchor="end">2.322</text><line x1="90" y1="55.0" x2="860" y2="55.0" stroke="#dbe3ea"/><text x="78" y="60.0" text-anchor="end">2.903</text>
 <line x1="90" y1="55" x2="90" y2="440" stroke="#455a64"/>
 <line x1="90" y1="440" x2="860" y2="440" stroke="#455a64"/>
 <text x="186.2" y="468" text-anchor="middle">1,000</text><text x="282.5" y="468" text-anchor="middle">2,000</text><text x="475.0" y="468" text-anchor="middle">4,000</text><text x="860.0" y="468" text-anchor="middle">8,000</text>
 <text x="450.0" y="500" text-anchor="middle">Array size</text>
 <text x="20" y="260.0" text-anchor="middle" transform="rotate(-90 20 260.0)">Median time (seconds)</text>
 <polyline points="186.2,440.0 282.5,439.9 475.0,439.8 860.0,439.1" fill="none" stroke="#1565c0" stroke-width="4"/>
-<polyline points="186.2,435.0 282.5,418.1 475.0,352.9 860.0,90.0" fill="none" stroke="#ef6c00" stroke-width="4"/>
+<polyline points="186.2,434.8 282.5,418.0 475.0,342.0 860.0,90.0" fill="none" stroke="#ef6c00" stroke-width="4"/>
 <circle cx="665" cy="55" r="6" fill="#1565c0"/><text x="680" y="60">C (-O2)</text>
 <circle cx="765" cy="55" r="6" fill="#ef6c00"/><text x="780" y="60">Python</text>
 </svg>
